@@ -484,6 +484,12 @@ class PrefetchTaskSpec:
             reader that will retrieve it. Ignored under ``NO_LOCK``.
         fetching_policy: See :data:`FetchingPolicy`.
         lock_mode: See :class:`PrefetchLockMode`.
+        require_whole_columns: A chunk (column) is usable only when every row
+            of it loaded, so reserve L1 staging whole columns at a time: on a
+            shortfall, split columns are released and the freed staging is
+            re-offered to complete other columns. Set by callers that consume
+            a chunk across all rows at once (the blender). Off by default:
+            the reported cells then carry per-row gaps.
 
     Note:
         Every key group holds the same number of keys (``group_size``). The
@@ -495,6 +501,7 @@ class PrefetchTaskSpec:
     num_kv_readers: int = 1
     fetching_policy: FetchingPolicy = "prefix"
     lock_mode: PrefetchLockMode = PrefetchLockMode.LOCK
+    require_whole_columns: bool = False
 
     def __post_init__(self) -> None:
         if not self.key_groups:
